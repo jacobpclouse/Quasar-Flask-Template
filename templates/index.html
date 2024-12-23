@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title> <!-- Use the title variable from Flask -->
+    <!-- <title>SMILES TO 3D Model</title> -->
+    <!-- Old style sheet -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">  -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://3dmol.csb.pitt.edu/build/3Dmol-min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Row for the header -->
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <!-- <h1>SMILES TO 3D Model</h1> -->
+                <h1>{{title}}</h1>
+            </div>
+        </div>
+
+        <!-- Row for the form -->
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-6">
+                <form method="POST" class="text-center">
+                    <label for="smiles">Enter SMILES:</label>
+                    <input type="text" id="smiles" name="smiles" class="form-control mb-3" required>
+                    <button type="submit" class="btn btn-primary">Generate 3D Model</button>
+                </form>
+                <!-- Buttons for molecule style change -->
+                <!-- <div class="row justify-content-center mt-4">
+                    <div class="col-md-6 text-center">
+                        <div class="btn-group" role="group" aria-label="Molecule Style">
+                            <button class="btn btn-secondary" onclick="changeStyle('stick')">Stick</button>
+                            <button class="btn btn-secondary" onclick="changeStyle('line')">Line</button>
+                            <button class="btn btn-secondary" onclick="changeStyle('sphere')">Sphere</button>
+                        </div>
+                    </div>
+                </div> -->
+            </div>
+        </div>
+
+        <!-- Row for the molecule viewer -->
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-8 text-center">
+                <div id="model-container" class="mx-auto" style="width: 800px; height: 600px;">
+                    <!-- 3D model will appear here -->
+                </div>
+            </div>
+        </div>
+
+        {% if molecule_name %}
+        <!-- Row for the molecule name -->
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-8 text-center">
+                <h2>{{ molecule_name }}</h2>
+            </div>
+        </div>
+        <!-- Buttons for molecule style change -->
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-6 text-center">
+                <div class="btn-group" role="group" aria-label="Molecule Style">
+                    <button class="btn btn-secondary" onclick="changeStyle('stick')">Stick</button>
+                    <button class="btn btn-secondary" onclick="changeStyle('line')">Line</button>
+                    <button class="btn btn-secondary" onclick="changeStyle('sphere')">Sphere</button>
+                </div>
+            </div>
+        </div>
+        <!-- Row for the download button -->
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-4 text-center">
+                <a href="{{ url_for('download_file', filename=pdb_filename) }}" class="btn btn-success"
+                    id="download-button">Download PDB</a>
+            </div>
+        </div>
+        {% endif %}
+        <!-- Embed spectral data or links here -->
+        {% if spectral_data %}
+        <!-- <img src="{{ spectral_data }}" alt="Spectral Data" class="img-fluid"> -->
+        <p>{{ spectral_data }}</p>
+        {% else %}
+        <p>No spectral data available for this molecule.</p>
+        {% endif %}
+
+
+    </div>
+
+    <script>
+        // Check if mol_block is passed
+        const molBlock = `{{ mol_block|safe }}`;
+        let viewer;  // Declare viewer globally so we can access it in different functions
+
+        if (molBlock) {
+            // Initialize 3Dmol viewer
+            viewer = $3Dmol.createViewer("model-container", {
+                backgroundColor: "white"
+            });
+
+            // Add molecule using mol_block
+            viewer.addModel(molBlock, "mol");  // "mol" format for MolBlock
+            viewer.setStyle({}, { stick: {} });  // Default to Stick style
+            viewer.zoomTo();  // Zoom into the molecule
+            viewer.render();  // Render the molecule
+        }
+
+        // Function to change the style of the molecule
+        function changeStyle(styleType) {
+            // Clear the current styles
+            viewer.setStyle({}, null);
+
+            // Apply the selected style
+            if (styleType === 'stick') {
+                viewer.setStyle({}, { stick: {} });
+            } else if (styleType === 'line') {
+                viewer.setStyle({}, { line: {} });
+            } else if (styleType === 'sphere') {
+                viewer.setStyle({}, { sphere: { scale: 0.3 } });
+            }
+
+            // Re-render the molecule
+            viewer.render();
+        }
+    </script>
+</body>
+
+</html>
